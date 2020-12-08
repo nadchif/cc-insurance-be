@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+use Illuminate\Support\Facades\DB;
 
 use Illuminate\Http\Request;
 
@@ -13,14 +14,23 @@ class EntityController extends Controller
      */
     public function index()
     {
-        return response()->json(array(
-            'data' => [
-                ['id' => 1, 'title' => 'church a'],
-                ['id' => 2, 'title' => 'church b'],
-                ['id' => 3, 'title' => 'church c'],
-            ],
-            'errors' => null,
-        ), 200);
+        $entries = DB::select('select * from entities ORDER BY name', [
+            1
+        ]);
+        // The array we're going to return
+        $result = array_map(function ($entry) {
+            return array(
+                'id' => $entry->id,
+                'name' => $entry->name,
+                'address' => $entry->address,
+                'code' => $entry->code
+            );
+        }, $entries);
+            
+            return response()->json(array(
+                'data' => $result,
+                'errors' => null
+            ), 200);
     }
 
     /**

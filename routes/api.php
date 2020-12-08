@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Route;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
  */
-Route::group(['prefix' => '/', 'middleware' => ['jsonify']], function () {
+Route::group(['prefix' => '/', 'middleware' => ['jsonify', 'cors']], function () {
 
     Route::get('/', function (Request $request) {
         return response()->json(array(
@@ -22,6 +22,16 @@ Route::group(['prefix' => '/', 'middleware' => ['jsonify']], function () {
         ), 200);
     });
     Route::get('entity', 'App\Http\Controllers\EntityController@index');
+
+    Route::post('login', 'App\Http\Controllers\LoginController@login');
+    
+    Route::middleware('auth:api')->get('user', 'App\Http\Controllers\UserController@index');
+    
+    Route::post('user', 'App\Http\Controllers\UserController@create');
+    
+    Route::get('user/verify/{id}', 'VerificationController@verify')->name('verification.verify');
+    
+    Route::post('user/resend', 'VerificationController@resend')->name('verification.resend');
 
     Route::fallback(function () {
         return response()->json([
