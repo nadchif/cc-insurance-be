@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Route;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
  */
-Route::group(['prefix' => '/', 'middleware' => ['jsonify', 'cors']], function () {
+Route::group(['prefix' => '/', 'middleware' => ['jsonify']], function () {
 
     Route::get('/', function (Request $request) {
         return response()->json(array(
@@ -21,13 +21,27 @@ Route::group(['prefix' => '/', 'middleware' => ['jsonify', 'cors']], function ()
             'version' => '1.0.0',
         ), 200);
     });
+
+    // entity/organization
     Route::get('entity', 'App\Http\Controllers\EntityController@index');
+
+    Route::middleware('auth:api')->post('entity', 'App\Http\Controllers\EntityController@store');
+
+    Route::get('entity/{id}', 'App\Http\Controllers\EntityController@get');
+    
+    // insurance entry
+
+    Route::middleware('auth:api')->get('entry', 'App\Http\Controllers\EntryController@index');
+
+    Route::middleware('auth:api')->get('entry/{id}', 'App\Http\Controllers\EntryController@get');
+
+    // login and user functions
 
     Route::post('login', 'App\Http\Controllers\LoginController@login');
     
     Route::middleware('auth:api')->get('user', 'App\Http\Controllers\UserController@index');
     
-    Route::post('user', 'App\Http\Controllers\UserController@create');
+    Route::post('user', 'App\Http\Controllers\UserController@store');
     
     Route::get('user/verify/{id}', 'VerificationController@verify')->name('verification.verify');
     

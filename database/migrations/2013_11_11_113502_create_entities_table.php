@@ -17,9 +17,11 @@ class CreateEntitiesTable extends Migration
             $table->id();
             $table->string('name')->nullable(false);
             $table->string('address')->default('');
-            $table->string('contact')->default('');
+            $table->string('phone')->default('');
             $table->string('code')->nullable(false);
-            $table->timestamp('last_updated')->default(DB::raw('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'));
+
+            $table->timestamp('created_at')->default(DB::raw('CURRENT_TIMESTAMP'));
+            $table->timestamp('updated_at')->default(DB::raw('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'));
         });
     }
 

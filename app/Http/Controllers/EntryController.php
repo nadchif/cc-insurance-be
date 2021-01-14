@@ -1,13 +1,12 @@
 <?php
+
 namespace App\Http\Controllers;
 
-use App\Models\Entity;
+use App\Models\Entry;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
-class EntityController extends Controller
+class EntryController extends Controller
 {
-
     /**
      * Display a listing of the resource.
      *
@@ -15,10 +14,10 @@ class EntityController extends Controller
      */
     public function index()
     {
-        $entities = Entity::orderBy('name')->get();
+        $entries = Entry::all();
 
         return response()->json(array(
-            'data' => $entities,
+            'data' => $entries,
             'errors' => null
         ), 200);
     }
@@ -26,25 +25,32 @@ class EntityController extends Controller
     /**
      * Store a newly created resource in storage.
      *
+     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|min:2',
-            'address' => 'required|string',
-            'phone' => 'required|string',
-            'code' => 'required|string'
+            'date_insured'=> 'required|date|date_format:Y-m-d',
+            'entity'=> 'required|integer',
+            'erf'=> 'string',
+            'address'=> 'string',
+            'type'=> 'required|in:allrisk,bldg,contents,bldg\/cont',
+            'description'=> 'required|string|min:3',
+            'serial'=> 'string',
+            'fnCT'=> 'string',
+            'value1617'=> 'numeric|min:0',
+            'value1718'=> 'numeric|min:0',
+            'value_current'=> 'required|numeric|min:0',
+            'account'=> 'string',
         ]);
 
         try {
-            $entity = Entity::create([
-                'name' => $request->name,
-                'code' => $request->code
+            $entry = Entry::create([
             ]);
             DB::commit();
             return response()->json(array(
-                'data' => $entity,
+                'data' => $entry,
                 'errors' => null
             ), 201);
         } catch (\Exception $e) {
@@ -64,20 +70,20 @@ class EntityController extends Controller
      */
     public function get($id)
     {
-        $entity = Entity::find($id);
+        $entry = Entry::find($id);
         return response()->json(array(
-            'data' => $entity,
-            'errors' => $entity ? null : 'Not available'
-        ), $entity ? 200 : 404);
+            'data' => $entry,
+            'errors' => $entry ? null : 'Not available'
+        ), $entry ? 200 : 404);
     }
 
     /**
      * Show the form for editing the specified resource.
      *
-     * @param int $id
+     * @param  \App\Models\Entry  $entry
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit(Entry $entry)
     {
         //
     }
@@ -85,11 +91,11 @@ class EntityController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param \Illuminate\Http\Request $request
-     * @param int $id
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Models\Entry  $entry
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, Entry $entry)
     {
         //
     }
@@ -97,10 +103,10 @@ class EntityController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param int $id
+     * @param  \App\Models\Entry  $entry
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Entry $entry)
     {
         //
     }
