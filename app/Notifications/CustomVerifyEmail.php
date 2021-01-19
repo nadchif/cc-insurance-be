@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use Config;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\URL;
 
@@ -19,7 +20,9 @@ class CustomVerifyEmail extends VerifyEmailBase
      */
     protected function verificationUrl($notifiable)
     {
-        $prefix = env('FRONTEND_EMAIL_VERIFY_URL', 'http://localhost:8000/verify/');
+        // $prefix = env('FRONTEND_EMAIL_VERIFY_URL', 'http://localhost:8000/verify/');
+        $prefix = config('customenv.frontend_api_url');
+
         $temporarySignedURL = URL::temporarySignedRoute(
             'verification.verify', Carbon::now()->addMinutes(60), ['id' => $notifiable->getKey()]
         );

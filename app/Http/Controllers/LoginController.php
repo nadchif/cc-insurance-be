@@ -13,7 +13,7 @@ class LoginController extends Controller
             'email' => 'required|string',
             'password' => 'required|string',
         ]);
-
+ 
         if (isset($request->token)) {
             return $this->googleLogin($request->token);
         }

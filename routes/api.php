@@ -43,9 +43,9 @@ Route::group(['prefix' => '/', 'middleware' => ['jsonify']], function () {
     
     Route::post('user', 'App\Http\Controllers\UserController@store');
     
-    Route::get('user/verify/{id}', 'VerificationController@verify')->name('verification.verify');
+    Route::get('user/verify/{id}', 'App\Http\Controllers\VerificationController@verify')->name('verification.verify');
     
-    Route::post('user/resend', 'VerificationController@resend')->name('verification.resend');
+    Route::post('user/resend', 'App\Http\Controllers\VerificationController@resend')->name('verification.resend');
 
     Route::fallback(function () {
         return response()->json([
