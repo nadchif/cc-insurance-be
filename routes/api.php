@@ -51,6 +51,8 @@ Route::group(['prefix' => '/', 'middleware' => ['jsonify']], function () {
 
     Route::get('user/reset-password', 'App\Http\Controllers\ForgotPasswordController@resetPasswordToken')->middleware('guest')->name('password.reset');
 
+    Route::post('user/reset-password', 'App\Http\Controllers\ForgotPasswordController@setNewPassword')->middleware('guest')->name('password.update');
+
     Route::fallback(function () {
         return response()->json([
             'message' => 'Path not found. If error persists, contact the administrator'], 404);
