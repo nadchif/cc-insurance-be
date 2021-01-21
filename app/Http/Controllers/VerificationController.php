@@ -33,13 +33,13 @@ class VerificationController extends Controller
     public function resend(Request $request)
     {
         $request->validate([
-            'email'=> 'string|email'
+            'email'=> 'required|string|email'
         ]);
 
         $user = User::where('email', $request->email)->first();
 
         if($user == null){
-            // for security reasons spoof success
+            // for security reasons spoof success to prevent fishing
             return response()->json([
                 'result' => 'success',
                 'error' => null,

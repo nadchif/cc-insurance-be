@@ -3,10 +3,9 @@
 namespace App\Notifications;
 
 use Config;
+use Illuminate\Auth\Notifications\VerifyEmail as VerifyEmailBase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\URL;
-
-use Illuminate\Auth\Notifications\VerifyEmail as VerifyEmailBase;
 
 class CustomVerifyEmail extends VerifyEmailBase
 {
@@ -20,7 +19,6 @@ class CustomVerifyEmail extends VerifyEmailBase
      */
     protected function verificationUrl($notifiable)
     {
-        // $prefix = env('FRONTEND_EMAIL_VERIFY_URL', 'http://localhost:8000/verify/');
         $prefix = config('customenv.frontend_api_url');
 
         $temporarySignedURL = URL::temporarySignedRoute(
@@ -29,6 +27,6 @@ class CustomVerifyEmail extends VerifyEmailBase
 
         // verification url to pass to my frontend. Chif
         $split_url = explode('user/verify/', $temporarySignedURL);
-        return $prefix . $split_url[1];
+        return $prefix . "vrify/" . $split_url[1];
     }
 }

@@ -47,6 +47,10 @@ Route::group(['prefix' => '/', 'middleware' => ['jsonify']], function () {
     
     Route::post('user/resend', 'App\Http\Controllers\VerificationController@resend')->name('verification.resend');
 
+    Route::post('user/forgot', 'App\Http\Controllers\ForgotPasswordController@requestLink')->middleware('guest')->name('password.email');
+
+    Route::get('user/reset-password', 'App\Http\Controllers\ForgotPasswordController@resetPasswordToken')->middleware('guest')->name('password.reset');
+
     Route::fallback(function () {
         return response()->json([
             'message' => 'Path not found. If error persists, contact the administrator'], 404);
