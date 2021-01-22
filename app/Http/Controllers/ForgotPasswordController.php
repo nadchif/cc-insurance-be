@@ -28,7 +28,7 @@ class ForgotPasswordController extends Controller
 
         return $status === Password::RESET_LINK_SENT
         ? response()->json(['message' => __($status), 'status'=>$status], 202)
-        : response()->json(['message' => __($status), 'error'=>$status], 503);
+        : response()->json(['error'=>__($status), 'status'=>$status], 503);
 
     }
 
@@ -41,7 +41,7 @@ class ForgotPasswordController extends Controller
         $request->validate([
             'token' => 'required',
             'email' => 'required|email',
-            'password' => 'required|min:8|confirmed',
+            'password' => 'required|min:7|confirmed',
         ]);
     
         $status = Password::reset(
@@ -59,7 +59,7 @@ class ForgotPasswordController extends Controller
     
         return $status == Password::PASSWORD_RESET
                     ? response()->json(['message' => __($status), 'status'=>$status], 202)
-                    : response()->json(['message' => __($status), 'error'=>$status], 503);
+                    : response()->json(['error'=>__($status), 'status'=>$status], 503);
     }
 
 }
