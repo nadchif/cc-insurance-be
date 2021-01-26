@@ -37,6 +37,7 @@ class UserSeeder extends Seeder
                 $entry_email_verified_at = $entryData[8];
                 $entry_phone = $entryData[9];
                 $entry_address = $entryData[10];
+                $entry_org = $orgs['none'];
                 if(isset($orgs[$entry_code])){
                     $entry_org = $orgs[$entry_code];
                 }else{
