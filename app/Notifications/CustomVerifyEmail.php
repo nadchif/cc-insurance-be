@@ -27,6 +27,6 @@ class CustomVerifyEmail extends VerifyEmailBase
 
         // verification url to pass to my frontend. Chif
         $split_url = explode('user/verify/', $temporarySignedURL);
-        return $prefix . "vrify/" . $split_url[1];
+        return $prefix . "verify/" . $split_url[1];
     }
 }

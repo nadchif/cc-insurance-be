@@ -16,10 +16,9 @@ class EntityController extends Controller
     public function index()
     {
         $entities = Entity::orderBy('name')->get();
-
         return response()->json(array(
             'data' => $entities,
-            'errors' => null
+            'error' => null
         ), 200);
     }
 
@@ -45,13 +44,13 @@ class EntityController extends Controller
             DB::commit();
             return response()->json(array(
                 'data' => $entity,
-                'errors' => null
+                'error' => null
             ), 201);
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json(array(
                 'data' => false,
-                'errors' => $e->getMessage()
+                'error' => $e->getMessage()
             ), 500);
         }
     }
@@ -67,7 +66,7 @@ class EntityController extends Controller
         $entity = Entity::find($id);
         return response()->json(array(
             'data' => $entity,
-            'errors' => $entity ? null : 'Not available'
+            'error' => $entity ? null : 'Not available'
         ), $entity ? 200 : 404);
     }
 

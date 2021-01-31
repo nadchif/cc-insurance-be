@@ -21,18 +21,13 @@ class Entry extends Model
         'type',
         'description',
         'serial',
-        'fnCT',
-        'value1617',
-        'value1718',
-        'value_current',
-        'account'
+        'building_value',
+        'contents_value',
     ];
 
     protected $attributes = [
-        'value1617'=>0,
-        'value1718'=>0,
-        'account'=>'',
-        'fnCT'=>'',
+        'building_value'=>0,
+        'contents_value'=>0,
         'serial'=>'',
         'address'=>'',
         'erf'=>''

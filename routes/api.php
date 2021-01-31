@@ -28,23 +28,35 @@ Route::group(['prefix' => '/', 'middleware' => ['jsonify']], function () {
     Route::middleware('auth:api')->post('entity', 'App\Http\Controllers\EntityController@store');
 
     Route::get('entity/{id}', 'App\Http\Controllers\EntityController@get');
-    
+
     // insurance entry
 
     Route::middleware('auth:api')->get('entry', 'App\Http\Controllers\EntryController@index');
 
     Route::middleware('auth:api')->get('entry/{id}', 'App\Http\Controllers\EntryController@get');
 
+    Route::middleware('auth:api')->post('entry', 'App\Http\Controllers\EntryController@post');
+
+    Route::middleware('auth:api')->put('entry/{id}', 'App\Http\Controllers\EntryController@put');
+
+    Route::middleware('auth:api')->delete('entry/{id}', 'App\Http\Controllers\EntryController@delete');
+
+    Route::middleware('auth:api')->delete('entry', 'App\Http\Controllers\EntryController@batchDelete');
+
     // login and user functions
 
     Route::post('login', 'App\Http\Controllers\LoginController@login');
-    
+
     Route::middleware('auth:api')->get('user', 'App\Http\Controllers\UserController@index');
-    
+
+    Route::middleware('auth:api')->get('auth', function (Request $request) {
+        return response(null, 204);
+    });
+
     Route::post('user', 'App\Http\Controllers\UserController@store');
-    
+
     Route::get('user/verify/{id}', 'App\Http\Controllers\VerificationController@verify')->name('verification.verify');
-    
+
     Route::post('user/resend', 'App\Http\Controllers\VerificationController@resend')->name('verification.resend');
 
     Route::post('user/forgot-password', 'App\Http\Controllers\ForgotPasswordController@requestLink')->middleware('guest')->name('password.email');
