@@ -135,8 +135,8 @@ class EntryController extends Controller
             if ($request->serial) {
                 $entry->serial = $request->serial;
             }
-            $entry->contents_value = $request->contents_value;
-            $entry->building_value = $request->building_value;
+            $entry->contents_value = $request->contents_value != null ? $request->contents_value : 0;
+            $entry->building_value = $request->building_value != null ? $request->building_value : 0;
             $entry->save();
 
             return response()->json(array(
@@ -202,7 +202,7 @@ class EntryController extends Controller
 
     public function batchDelete(Request $request){
 
-        $request->validate(['ids' => 'required|array|min:2|max:50']);
+        $request->validate(['ids' => 'required|array|min:2|max:25']);
         $deleteList = array();
         foreach ($request->ids  as $id) {
             $result = $this->findWithCheckPermissions($id);

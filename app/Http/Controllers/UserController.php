@@ -10,7 +10,18 @@ use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
 {
-    //
+    public function __construct(){
+        $this->required_fields = [
+            'first_name' => 'required|string|min:2',
+            'last_name' => 'required|string|min:2',
+            'phone' => 'string',
+            'address' => 'string',
+            'email' => 'required|email',
+            'entity' => 'required|integer',
+            'password' => 'required|string',
+        ];
+    }
+
     public function index()
     {
         $currentUser = Auth::user();
@@ -58,15 +69,7 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'first_name' => 'required|string|min:2',
-            'last_name' => 'required|string|min:2',
-            'phone' => 'string',
-            'address' => 'string',
-            'email' => 'required|email',
-            'entity' => 'required|integer',
-            'password' => 'required|string',
-        ]);
+        $request->validate($this->required_fields);
         DB::beginTransaction();
         try {
             $user = User::create([
@@ -93,5 +96,77 @@ class UserController extends Controller
             ), 500);
         }
 
+    }
+
+
+    public function get($id)
+    {
+        $result = $this->findWithCheckPermissions($id);
+        if ($result['success'] === true) {
+            $user = $result['data'];
+            return response()->json(array(
+                'data' => $user,
+                'error' => null,
+            ), 200);
+        }
+        return $this->handleEntryFindResponse($result);
+    }
+    public function put(Request $request, $id)
+    {
+        $request->validate([
+            'first_name' => 'required|string|min:2',
+            'last_name' => 'required|string|min:2',
+            'phone' => 'nullable|string',
+            'address' => 'nullable|string',
+            'entity' => 'required|integer',
+        ]);
+        $result = $this->findWithCheckPermissions($id);
+        if ($result['success'] === true) {
+            $user = $result['data'];
+
+            $user->first_name = $request->first_name;
+            $user->last_name = $request->last_name;
+            $user->phone = $request->phone;
+            $user->address = $request->address;
+            $user->entity = $request->entity;
+            $user->save();
+
+            return response()->json(array(
+                'data' => $user,
+                'error' => null,
+            ), 200);
+        }
+        return $this->handleEntryFindResponse($result);
+
+    }
+
+    private function findWithCheckPermissions($id)
+    {
+        $currentUser = Auth::user();
+        $item = User::find($id);
+        if ($currentUser->category === 'admin') {
+            return ['success' => true, 'data' => $item];
+        } else {
+            if ($item && $item->id == $currentUser->id) {
+                return ['success' => true, 'data' => $item];
+            } else {
+                return ['success' => false, 'data' => null, 'status' => 'no_permission'];
+            }
+        }
+        return ['success' => false, 'data' => null, 'status' => 'not_found'];
+    }
+
+    private function handleEntryFindResponse($result, $noPermissionMsg = "You have no permission to modify this resource")
+    {
+        if ($result['status'] === 'no_permission') {
+            return response()->json(array(
+                'data' => null,
+                'error' => $noPermissionMsg,
+            ), 403);
+        }
+        return response()->json(array(
+            'data' => null,
+            'error' => "This resource could not be found",
+        ), 404);
     }
 }

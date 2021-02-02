@@ -49,6 +49,10 @@ Route::group(['prefix' => '/', 'middleware' => ['jsonify']], function () {
 
     Route::middleware('auth:api')->get('user', 'App\Http\Controllers\UserController@index');
 
+    Route::middleware('auth:api')->get('user/{id}', 'App\Http\Controllers\UserController@get');
+    
+    Route::middleware('auth:api')->put('user/{id}', 'App\Http\Controllers\UserController@put');
+
     Route::middleware('auth:api')->get('auth', function (Request $request) {
         return response(null, 204);
     });
