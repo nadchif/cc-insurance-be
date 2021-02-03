@@ -60,33 +60,6 @@ class EntryController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        $request->validate($this->required_fields);
-
-        try {
-            $entry = Entry::create([
-            ]);
-            DB::commit();
-            return response()->json(array(
-                'data' => $entry,
-                'error' => null,
-            ), 201);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json(array(
-                'data' => false,
-                'errors' => $e->getMessage(),
-            ), 500);
-        }
-    }
-
-    /**
      * Display the specified resource.
      *
      * @param int $id
@@ -168,13 +141,11 @@ class EntryController extends Controller
                     'contents_value' => $request->contents_value != null ? $request->contents_value : 0,
                     'building_value' => $request->building_value != null ? $request->building_value : 0,
                 ]);
-                DB::commit();
                 return response()->json(array(
                     'data' => $entry,
                     'error' => null,
                 ), 201);
             } catch (\Exception $e) {
-                DB::rollBack();
                 return response()->json(array(
                     'data' => false,
                     'error' => $e->getMessage(),

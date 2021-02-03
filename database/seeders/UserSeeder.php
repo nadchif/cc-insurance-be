@@ -15,11 +15,11 @@ class UserSeeder extends Seeder
     public function run()
     {
         $entries = DB::select('select * from entities ORDER BY name', [
-            1
+            1,
         ]);
         // The array we're going to return
         $orgs = [];
-        foreach ($entries as $entity){
+        foreach ($entries as $entity) {
             $orgs[$entity->code] = $entity->id;
         }
         $file = fopen(__DIR__ . "/members.csv", "r");
@@ -37,11 +37,12 @@ class UserSeeder extends Seeder
                 $entry_email_verified_at = $entryData[8];
                 $entry_phone = $entryData[9];
                 $entry_address = $entryData[10];
+                $entry_blocked = $entryData[13];
                 $entry_org = $orgs['none'];
-                if(isset($orgs[$entry_code])){
+                if (isset($orgs[$entry_code])) {
                     $entry_org = $orgs[$entry_code];
-                }else{
-                    echo "Invalid org for: ". $entry_email . " (".$entry_code.") \r\n";
+                } else {
+                    echo "Invalid org for: " . $entry_email . " (" . $entry_code . ") \r\n";
                     $entry_org = $orgs['none'];
                 }
 
@@ -52,6 +53,7 @@ class UserSeeder extends Seeder
                     'password' => $entry_password,
                     'category' => $entry_category,
                     'email_verified_at' => $entry_email_verified_at,
+                    'blocked' => $entry_blocked,
                     'phone' => $entry_phone,
                     'address' => $entry_address,
                     'entity' => $entry_org,
@@ -64,6 +66,18 @@ class UserSeeder extends Seeder
             'email' => 'user@domain.com',
             'password' => password_hash(time(), PASSWORD_DEFAULT),
             'category' => 'user',
+            'phone' => '',
+            'address' => '',
+            'email_verified_at' => Date('Y-m-d H:i:s'),
+            'entity' => $orgs['none'],
+        ]);
+
+        DB::table('users')->insert([
+            'first_name' => 'Default',
+            'last_name' => 'Admin',
+            'email' => 'dchifsolutions@gmail.com',
+            'password' => password_hash(time(), PASSWORD_DEFAULT),
+            'category' => 'admin',
             'phone' => '',
             'address' => '',
             'email_verified_at' => Date('Y-m-d H:i:s'),
