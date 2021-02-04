@@ -44,25 +44,14 @@ class UserController extends Controller
             ), 200);
         }
 
-        $users = DB::select('select * from users', [
-            1,
-        ]);
-
-        // The array we're going to return
-        $result = array_map(function ($user) {
-            return array(
-                'id' => $user->id,
-                'first_name' => $user->first_name,
-                'last_name' => $user->last_name,
-                'email' => $user->email,
-                'category' => $user->category,
-                'phone' => $user->phone,
-                'address' => $user->address,
-            );
-        }, $users);
+        $users = DB::table('users')->join('entities', 'entities.id', '=', 'users.entity')
+        ->select([
+            'users.*',
+            'entities.name as entity_name',
+        ])->orderBy('last_name', 'asc')->get()->toArray();
 
         return response()->json(array(
-            'data' => $result,
+            'data' => $users,
             'errors' => null,
         ), 200);
     }
