@@ -68,6 +68,7 @@ class SettingController extends Controller
             'admins' => 'array|min:1|max:25',
             'admins.*' => 'integer',
             'blocked_users' => 'array',
+            'blocked_users.*' => 'integer',
         ]);
 
         if ($request->admins != null) {
@@ -91,6 +92,29 @@ class SettingController extends Controller
             foreach ($admin_list as $id) {
                 $user = User::find($id);
                 $user->category = 'admin';
+                $user->save();
+            }
+        }
+
+        if ($request->blocked_users != null) {
+            $blocked_users_ids = User::where('blocked', 1)->get()->map(function ($user) {
+                return $user->id;
+            })->toArray();
+            $blocked_users_list = $request->blocked_users;
+
+            $to_be_removed_ids = array_filter($blocked_users_ids, (function ($id) use ($blocked_users_list) {
+                return !in_array($id, $blocked_users_list);
+            }));
+
+            foreach ($to_be_removed_ids as $id) {
+                $user = User::find($id);
+                $user->blocked = 0;
+                $user->save();
+            }
+
+            foreach ($blocked_users_list as $id) {
+                $user = User::find($id);
+                $user->blocked = 1;
                 $user->save();
             }
         }
