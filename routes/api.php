@@ -51,13 +51,17 @@ Route::group(['prefix' => '/', 'middleware' => ['jsonify']], function () {
 
     Route::middleware('auth:api')->get('user/{id}', 'App\Http\Controllers\UserController@get');
     
-    Route::middleware('auth:api')->put('user/{id}', 'App\Http\Controllers\UserController@put');
+    Route::middleware('auth:api')->patch('user/{id}', 'App\Http\Controllers\UserController@patch');
 
     Route::middleware('auth:api')->get('auth', function (Request $request) {
         return response(null, 204);
     });
 
     Route::post('user', 'App\Http\Controllers\UserController@store');
+
+    Route::middleware('auth:api')->delete('user/{id}', 'App\Http\Controllers\UserController@delete');
+
+    Route::middleware('auth:api')->delete('user', 'App\Http\Controllers\UserController@batchDelete');
 
     Route::get('user/verify/{id}', 'App\Http\Controllers\VerificationController@verify')->name('verification.verify');
 
@@ -73,7 +77,7 @@ Route::group(['prefix' => '/', 'middleware' => ['jsonify']], function () {
     // settings
     Route::middleware('auth:api')->get('settings', 'App\Http\Controllers\SettingController@get');
 
-    Route::middleware('auth:api')->put('settings', 'App\Http\Controllers\SettingController@put');
+    Route::middleware('auth:api')->patch('settings', 'App\Http\Controllers\SettingController@patch');
 
 
     Route::fallback(function () {

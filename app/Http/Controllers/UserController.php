@@ -10,7 +10,8 @@ use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
 {
-    public function __construct(){
+    public function __construct()
+    {
         $this->required_fields = [
             'first_name' => 'required|string|min:2',
             'last_name' => 'required|string|min:2',
@@ -45,10 +46,10 @@ class UserController extends Controller
         }
 
         $users = DB::table('users')->join('entities', 'entities.id', '=', 'users.entity')
-        ->select([
-            'users.*',
-            'entities.name as entity_name',
-        ])->orderBy('last_name', 'asc')->get()->toArray();
+            ->select([
+                'users.*',
+                'entities.name as entity_name',
+            ])->orderBy('last_name', 'asc')->get()->toArray();
 
         return response()->json(array(
             'data' => $users,
@@ -87,7 +88,6 @@ class UserController extends Controller
 
     }
 
-
     public function get($id)
     {
         $result = $this->findWithCheckPermissions($id);
@@ -100,24 +100,48 @@ class UserController extends Controller
         }
         return $this->handleEntryFindResponse($result);
     }
-    public function put(Request $request, $id)
+    public function patch(Request $request, $id)
     {
         $request->validate([
-            'first_name' => 'required|string|min:2',
-            'last_name' => 'required|string|min:2',
+            'first_name' => 'string|min:2',
+            'last_name' => 'string|min:2',
             'phone' => 'nullable|string',
             'address' => 'nullable|string',
-            'entity' => 'required|integer',
+            'entity' => 'integer',
+            'blocked' => 'boolean',
         ]);
+
+        $currentUser = Auth::user();
         $result = $this->findWithCheckPermissions($id);
         if ($result['success'] === true) {
             $user = $result['data'];
 
-            $user->first_name = $request->first_name;
-            $user->last_name = $request->last_name;
-            $user->phone = $request->phone;
-            $user->address = $request->address;
-            $user->entity = $request->entity;
+            if ($request->first_name != null) {
+                $user->first_name = $request->first_name;
+            }
+            if ($request->last_name != null) {
+                $user->last_name = $request->last_name;
+            }
+            if ($request->phone != null) {
+                $user->phone = $request->phone;
+            }
+            if ($request->address != null) {
+                $user->address = $request->address;
+            }
+            if ($request->entity != null) {
+                $user->entity = $request->entity;
+            }
+            if ($currentUser->category === 'admin') {
+                if ($request->blocked !== null) {
+                    if ($request->blocked == 1 && strtolower($user->category) == 'admin') {
+                        return response()->json(array(
+                            'data' => false,
+                            'error' => 'Cannot block admin. Make sure user is a regular user first',
+                        ), 403);
+                    }
+                    $user->blocked = $request->blocked;
+                }
+            }
             $user->save();
 
             return response()->json(array(
@@ -127,6 +151,39 @@ class UserController extends Controller
         }
         return $this->handleEntryFindResponse($result);
 
+    }
+    public function delete($id)
+    {
+        $result = $this->findWithCheckPermissions($id);
+        if ($result['success'] === true) {
+            $entry = $result['data'];
+            if (strtolower($entry->category) == 'admin') {
+                return response()->json(array(
+                    'data' => false,
+                    'error' => 'Cannot delete admin. Make sure user is a regular user first',
+                ), 403);
+            }
+            $entry->delete();
+            return response(null, 204);
+        }
+        return $this->handleEntryFindResponse($result);
+    }
+    public function batchDelete(Request $request)
+    {
+
+        $request->validate(['ids' => 'required|array|min:2|max:25']);
+        $deleteList = array();
+        foreach ($request->ids as $id) {
+            $result = $this->findWithCheckPermissions($id);
+            if ($result['success'] !== true) {
+                return $this->handleEntryFindResponse($result, "You do not have permission to delete resource with id: " . $id);
+            }
+            $deleteList[] = $result['data'];
+        }
+        foreach ($deleteList as $entry) {
+            $entry->delete();
+        }
+        response(null, 204);
     }
 
     private function findWithCheckPermissions($id)

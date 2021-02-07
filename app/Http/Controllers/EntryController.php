@@ -161,7 +161,6 @@ class EntryController extends Controller
 
     public function delete($id)
     {
-        $currentUser = Auth::user();
         $result = $this->findWithCheckPermissions($id);
         if ($result['success'] === true) {
             $entry = $result['data'];
@@ -171,14 +170,15 @@ class EntryController extends Controller
         return $this->handleEntryFindResponse($result);
     }
 
-    public function batchDelete(Request $request){
+    public function batchDelete(Request $request)
+    {
 
         $request->validate(['ids' => 'required|array|min:2|max:25']);
         $deleteList = array();
-        foreach ($request->ids  as $id) {
+        foreach ($request->ids as $id) {
             $result = $this->findWithCheckPermissions($id);
             if ($result['success'] !== true) {
-                return $this->handleEntryFindResponse($result, "You do not have permission to delete resource with id: ".$id);
+                return $this->handleEntryFindResponse($result, "You do not have permission to delete resource with id: " . $id);
             }
             $deleteList[] = $result['data'];
         }

@@ -54,7 +54,7 @@ class SettingController extends Controller
 
     }
 
-    public function put(Request $request)
+    public function patch(Request $request)
     {
         $currentUser = Auth::user();
         if ($currentUser->category !== 'admin') {
@@ -101,7 +101,7 @@ class SettingController extends Controller
                 return $user->id;
             })->toArray();
             $blocked_users_list = $request->blocked_users;
-
+            
             $to_be_removed_ids = array_filter($blocked_users_ids, (function ($id) use ($blocked_users_list) {
                 return !in_array($id, $blocked_users_list);
             }));
