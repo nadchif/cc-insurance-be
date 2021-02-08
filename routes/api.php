@@ -25,9 +25,15 @@ Route::group(['prefix' => '/', 'middleware' => ['jsonify']], function () {
     // entity/organization
     Route::get('entity', 'App\Http\Controllers\EntityController@index');
 
-    Route::middleware('auth:api')->post('entity', 'App\Http\Controllers\EntityController@store');
+    Route::middleware('auth:api')->post('entity', 'App\Http\Controllers\EntityController@post');
 
     Route::get('entity/{id}', 'App\Http\Controllers\EntityController@get');
+
+    Route::middleware('auth:api')->put('entity/{id}', 'App\Http\Controllers\EntityController@put');
+
+    Route::middleware('auth:api')->delete('entity/{id}', 'App\Http\Controllers\EntityController@delete');
+
+    Route::middleware('auth:api')->delete('entity', 'App\Http\Controllers\EntityController@batchDelete');
 
     // insurance entry
 
