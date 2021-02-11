@@ -17,7 +17,7 @@ class DatabaseSeeder extends Seeder
         
         $this->call(EntitySeeder::class);
         $this->call(UserSeeder::class);
-        $this->call(EntrySeeder::class);
+        $this->call(RecordSeeder::class);
         $this->call(SettingSeeder::class);
     }
 }

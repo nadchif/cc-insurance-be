@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateEntriesTable extends Migration
+class CreateRecordsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,7 +13,7 @@ class CreateEntriesTable extends Migration
      */
     public function up()
     {
-        Schema::create('entries', function (Blueprint $table) {
+        Schema::create('records', function (Blueprint $table) {
             $table->id();
             $table->date('date_insured')->nullable(false)->useCurrentOnUpdate();
             $table->bigInteger('entity')->unsigned()->nullable(false);
@@ -40,6 +40,6 @@ class CreateEntriesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('entries');
+        Schema::dropIfExists('records');
     }
 }

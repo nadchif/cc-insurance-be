@@ -35,23 +35,23 @@ Route::group(['prefix' => '/', 'middleware' => ['jsonify']], function () {
 
     Route::middleware('auth:api')->delete('entity', 'App\Http\Controllers\EntityController@batchDelete');
 
-    // insurance entry
+    // insurance record
 
-    Route::middleware('auth:api')->get('entry', 'App\Http\Controllers\EntryController@index');
+    Route::middleware('auth:api')->get('record', 'App\Http\Controllers\RecordController@index');
 
-    Route::middleware('auth:api')->get('entry/{id}', 'App\Http\Controllers\EntryController@get');
+    Route::middleware('auth:api')->get('record/{id}', 'App\Http\Controllers\RecordController@get');
 
-    Route::middleware('auth:api')->post('entry', 'App\Http\Controllers\EntryController@post');
+    Route::middleware('auth:api')->post('record', 'App\Http\Controllers\RecordController@post');
 
-    Route::middleware('auth:api')->put('entry/{id}', 'App\Http\Controllers\EntryController@put');
+    Route::middleware('auth:api')->put('record/{id}', 'App\Http\Controllers\RecordController@put');
 
-    Route::middleware('auth:api')->delete('entry/{id}', 'App\Http\Controllers\EntryController@delete');
+    Route::middleware('auth:api')->delete('record/{id}', 'App\Http\Controllers\RecordController@delete');
 
-    Route::middleware('auth:api')->delete('entry', 'App\Http\Controllers\EntryController@batchDelete');
+    Route::middleware('auth:api')->delete('record', 'App\Http\Controllers\RecordController@batchDelete');
 
     // login and user functions
 
-    Route::post('login', 'App\Http\Controllers\LoginController@login');
+    Route::post('auth', 'App\Http\Controllers\LoginController@login');
 
     Route::middleware('auth:api')->get('user', 'App\Http\Controllers\UserController@index');
 

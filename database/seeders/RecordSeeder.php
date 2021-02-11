@@ -6,7 +6,7 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
-class EntrySeeder extends Seeder
+class RecordSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -16,12 +16,12 @@ class EntrySeeder extends Seeder
     public function run()
     {
 
-        $entries = DB::select('select * from entities ORDER BY name', [
+        $records = DB::select('select * from entities ORDER BY name', [
             1,
         ]);
         // The array we're going to return
         $orgs = [];
-        foreach ($entries as $entity) {
+        foreach ($records as $entity) {
             $orgs[$entity->name] = $entity->id;
         }
 
@@ -50,7 +50,7 @@ class EntrySeeder extends Seeder
                 $serial = $data[7];
                 $building_value = \floatval($data[8]);
                 $contents_value = \floatval($data[9]);
-                     DB::table('entries')->insert([
+                     DB::table('records')->insert([
                         'date_insured' => $date_insured,
                         'entity' => $entity_org,
                         'erf' => $erf,

@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Entry;
+use App\Models\Record;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
-class EntryController extends Controller
+class RecordController extends Controller
 {
 
     public function __construct()
@@ -33,25 +33,25 @@ class EntryController extends Controller
     {
         $currentUser = Auth::user();
         $envelopes = array();
-        $entries = '';
+        $records = '';
         if ($currentUser->category === 'admin') {
-            $entries = DB::table('entries')->join('entities', 'entities.id', '=', 'entries.entity')
+            $records = DB::table('records')->join('entities', 'entities.id', '=', 'records.entity')
                 ->select([
-                    'entries.*',
+                    'records.*',
                     'entities.name as entity_name',
                 ])->orderBy('date_insured', 'desc')->get()->toArray();
         } else {
-            $entries = DB::table('entries')->join('entities', 'entities.id', '=', 'entries.entity')
+            $records = DB::table('records')->join('entities', 'entities.id', '=', 'records.entity')
                 ->select([
-                    'entries.*',
+                    'records.*',
                     'entities.name as entity_name',
-                ])->orderBy('date_insured', 'desc')->where('entries.entity', $currentUser->entity)->get()->toArray();
+                ])->orderBy('date_insured', 'desc')->where('records.entity', $currentUser->entity)->get()->toArray();
         }
 
-        $result = array_map(function ($entry) {
-            $entry->premium = $this->calcPremium($entry->building_value + $entry->contents_value);
-            return $entry;
-        }, $entries);
+        $result = array_map(function ($record) {
+            $record->premium = $this->calcPremium($record->building_value + $record->contents_value);
+            return $record;
+        }, $records);
 
         return response()->json(array(
             'data' => $result,
@@ -68,18 +68,18 @@ class EntryController extends Controller
     public function get($id)
     {
         $currentUser = Auth::user();
-        $entry = Entry::find($id);
+        $record = Record::find($id);
         if ($currentUser->category === 'admin') {
             return response()->json(array(
-                'data' => $entry,
-                'error' => $entry ? null : 'This resource is not available',
-            ), $entry ? 200 : 404);
+                'data' => $record,
+                'error' => $record ? null : 'This resource is not available',
+            ), $record ? 200 : 404);
         } else {
-            if ($entry && $entry->entity == $currentUser->entity) {
+            if ($record && $record->entity == $currentUser->entity) {
                 return response()->json(array(
-                    'data' => $entry,
-                    'error' => $entry ? null : 'This resource is not available',
-                ), $entry ? 200 : 404);
+                    'data' => $record,
+                    'error' => $record ? null : 'This resource is not available',
+                ), $record ? 200 : 404);
             } else {
                 return response()->json(array(
                     'data' => null,
@@ -96,28 +96,28 @@ class EntryController extends Controller
         $currentUser = Auth::user();
         $result = $this->findWithCheckPermissions($id);
         if ($result['success'] === true) {
-            $entry = $result['data'];
-            $entry->date_insured = $request->date_insured;
-            $entry->entity = $request->entity;
+            $record = $result['data'];
+            $record->date_insured = $request->date_insured;
+            $record->entity = $request->entity;
             if ($request->erf) {
-                $entry->erf = $request->erf;
+                $record->erf = $request->erf;
             }
-            $entry->address = $request->address;
-            $entry->type = $request->type;
-            $entry->description = $request->description;
+            $record->address = $request->address;
+            $record->type = $request->type;
+            $record->description = $request->description;
             if ($request->serial) {
-                $entry->serial = $request->serial;
+                $record->serial = $request->serial;
             }
-            $entry->contents_value = $request->contents_value != null ? $request->contents_value : 0;
-            $entry->building_value = $request->building_value != null ? $request->building_value : 0;
-            $entry->save();
+            $record->contents_value = $request->contents_value != null ? $request->contents_value : 0;
+            $record->building_value = $request->building_value != null ? $request->building_value : 0;
+            $record->save();
 
             return response()->json(array(
-                'data' => $entry,
+                'data' => $record,
                 'error' => null,
             ), 200);
         }
-        return $this->handleEntryFindResponse($result);
+        return $this->handleRecordFindResponse($result);
 
     }
     public function post(Request $request)
@@ -130,7 +130,7 @@ class EntryController extends Controller
         if ($currentUser->category === 'admin' || $currentUser->entity == $request->entity) {
 
             try {
-                $entry = Entry::create([
+                $record = Record::create([
                     'date_insured' => $request->date_insured,
                     'entity' => $request->entity,
                     'erf' => $request->erf,
@@ -142,7 +142,7 @@ class EntryController extends Controller
                     'building_value' => $request->building_value != null ? $request->building_value : 0,
                 ]);
                 return response()->json(array(
-                    'data' => $entry,
+                    'data' => $record,
                     'error' => null,
                 ), 201);
             } catch (\Exception $e) {
@@ -163,11 +163,11 @@ class EntryController extends Controller
     {
         $result = $this->findWithCheckPermissions($id);
         if ($result['success'] === true) {
-            $entry = $result['data'];
-            $entry->delete();
+            $record = $result['data'];
+            $record->delete();
             return response(null, 204);
         }
-        return $this->handleEntryFindResponse($result);
+        return $this->handleRecordFindResponse($result);
     }
 
     public function batchDelete(Request $request)
@@ -178,12 +178,12 @@ class EntryController extends Controller
         foreach ($request->ids as $id) {
             $result = $this->findWithCheckPermissions($id);
             if ($result['success'] !== true) {
-                return $this->handleEntryFindResponse($result, "You do not have permission to delete resource with id: " . $id);
+                return $this->handleRecordFindResponse($result, "You do not have permission to delete resource with id: " . $id);
             }
             $deleteList[] = $result['data'];
         }
-        foreach ($deleteList as $entry) {
-            $entry->delete();
+        foreach ($deleteList as $record) {
+            $record->delete();
         }
         response(null, 204);
     }
@@ -197,12 +197,12 @@ class EntryController extends Controller
     private function findWithCheckPermissions($id)
     {
         $currentUser = Auth::user();
-        $entry = Entry::find($id);
+        $record = Record::find($id);
         if ($currentUser->category === 'admin') {
-            return ['success' => true, 'data' => $entry];
+            return ['success' => true, 'data' => $record];
         } else {
-            if ($entry && $entry->entity == $currentUser->entity) {
-                return ['success' => true, 'data' => $entry];
+            if ($record && $record->entity == $currentUser->entity) {
+                return ['success' => true, 'data' => $record];
             } else {
                 return ['success' => false, 'data' => null, 'status' => 'no_permission'];
             }
@@ -210,7 +210,7 @@ class EntryController extends Controller
         return ['success' => false, 'data' => null, 'status' => 'not_found'];
     }
 
-    private function handleEntryFindResponse($result, $noPermissionMsg = "You have no permission to modify this resource")
+    private function handleRecordFindResponse($result, $noPermissionMsg = "You have no permission to modify this resource")
     {
         if ($result['status'] === 'no_permission') {
             return response()->json(array(
