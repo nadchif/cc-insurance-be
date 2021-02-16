@@ -1,5 +1,6 @@
 <?php
 namespace App\Http\Controllers;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -10,10 +11,11 @@ class LoginController extends Controller
     public function login(Request $request)
     {
         $login = $request->validate([
-            'email' => 'required|string',
-            'password' => 'required|string',
+            'email' => 'required_without:token|string',
+            'password' => 'required_without:token|string',
+            'token' => 'required_without:password|string|min:8',
         ]);
- 
+
         if (isset($request->token)) {
             return $this->googleLogin($request->token);
         }
@@ -25,7 +27,7 @@ class LoginController extends Controller
                 'error' => 'invalid login credentials',
             ), 401);
         }
-        
+
         $user = Auth::user();
 
         if (is_null($user->email_verified_at)) {
@@ -37,18 +39,21 @@ class LoginController extends Controller
         $token = $user->createToken('authToken')->accessToken;
 
         return response()->json(array(
-            'user' => [
-                'id'=>$user->id,
-                'first_name' => $user->first_name,
-                'last_name' => $user->last_name,
-                'category' => $user->category,
-                'email' => $user->email,
-                'entity' => $user->entity,
-            ],
+            'user' => $this->getStarterUserProfile($user),
             'access_token' => $token,
         ), 200);
     }
-
+    private function getStarterUserProfile($user)
+    {
+        return [
+            'id' => $user->id,
+            'first_name' => $user->first_name,
+            'last_name' => $user->last_name,
+            'category' => $user->category,
+            'email' => $user->email,
+            'entity' => $user->entity,
+        ];
+    }
     private function googleLogin($authToken)
     {
         // GOOGLE LOGIN
@@ -91,12 +96,7 @@ class LoginController extends Controller
                     $token = $user->createToken('authToken')->accessToken;
 
                     return response()->json([
-                        'user' => [
-                            'name' => $user->name,
-                            'category' => $user->category,
-                            'email' => $user->email,
-                            'church' => $user->church,
-                        ],
+                        'user' => $this->getStarterUserProfile($user),
                         'access_token' => $token,
                     ], 200);
                 } else {

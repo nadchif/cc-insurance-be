@@ -89,6 +89,33 @@ class RecordController extends Controller
         }
     }
 
+    public function getDuplicates()
+    {
+        $currentUser = Auth::user();
+        $envelopes = array();
+        $records = [];
+        if ($currentUser->category === 'admin') {
+
+            $records = DB::table('records')->join('entities', 'entities.id', '=', 'records.entity')
+
+                ->select([
+                    'records.*',
+                    'entities.name as entity_name',
+                ])
+                ->orderBy('date_insured', 'desc')
+                ->get()->toArray();
+
+        }
+        $identicals = $this->getIdenticals($records);
+
+        $similars = $this->getSimilars($records, 75);
+
+        return response()->json(array(
+            'data' => ['similar' => $similars, 'identical' => $identicals],
+            'error' => null,
+        ), 200);
+    }
+
     public function put(Request $request, $id)
     {
         $request->validate($this->required_fields);
@@ -164,8 +191,12 @@ class RecordController extends Controller
         $result = $this->findWithCheckPermissions($id);
         if ($result['success'] === true) {
             $record = $result['data'];
-            $record->delete();
-            return response(null, 204);
+            if ($record !== null) {
+                $record->delete();
+                return response(null, 204);
+            }
+
+            return response(null, 404);
         }
         return $this->handleRecordFindResponse($result);
     }
@@ -173,7 +204,7 @@ class RecordController extends Controller
     public function batchDelete(Request $request)
     {
 
-        $request->validate(['ids' => 'required|array|min:2|max:25']);
+        $request->validate(['ids' => 'required|array|min:1|max:25']);
         $deleteList = array();
         foreach ($request->ids as $id) {
             $result = $this->findWithCheckPermissions($id);
@@ -193,13 +224,78 @@ class RecordController extends Controller
         $premium = $value * 0.0019;
         return number_format($premium, 2, '.', '');
     }
+    private function getKeywordSet($record)
+    {
+        $to_check_keys = ['date_insured', 'type', 'address', 'building_value', 'contents_value', 'serial', 'description', 'erf', 'entity'];
+        $similarity_signature = [];
+        foreach ($to_check_keys as $key) {
 
+            $similarity_signature[] = $key . ':' . $record->$key;
+
+        }
+        return $similarity_signature;
+    }
+    private function getSimilars($records, $similarity_threshold)
+    {
+        // 1. convert all records to arrays with key data
+        $keyword_collection = [];
+        foreach ($records as $record) {
+            $keyword_collection[] = $this->getKeywordSet($record);
+        }
+        // cross match each record against the arrays
+        $matching_data = [];
+        $already_matched = [];
+        foreach ($records as $key => $value) {
+            $record = $records[$key];
+            $matches = [];
+            foreach ($keyword_collection as $subkey => $subvalue) {
+                $keywords = $keyword_collection[$subkey];
+                $similar = array_intersect($keyword_collection[$key], $keywords);
+                $percent = count($similar) / count($keywords);
+                if ($percent > 0.85 && ($subkey != $key)) {
+                    $match = $records[$subkey];
+                    $match->p = round($percent, 2);
+                    $matches[] = $match;
+                }
+
+            }
+            if (count($matches) > 0) {
+                if (!in_array($record->id, $already_matched)) {
+                    $already_matched[] = $record->id;
+                    foreach ($matches as $match) {
+                        $already_matched[] = $match->id;
+                    }
+                    $matches[] = $record;
+                    $matching_data[] = $matches;
+                }
+
+            }
+        }
+        return $matching_data;
+    }
+    private function getIdenticals($records)
+    {
+        $base = [];
+        $to_check_keys = ['date_insured', 'type', 'address', 'building_value', 'contents_value', 'serial', 'description', 'erf', 'entity'];
+        foreach ($records as $record) {
+            $similarity_signature = '';
+            foreach ($to_check_keys as $key) {
+                $similarity_signature .= "--" . $record->$key . "--";
+            }
+            $base[$similarity_signature][] = $record;
+        }
+        $result = (array_filter($base, function ($cluster) {
+            return count($cluster) > 1;
+        }));
+        sort($result);
+        return $result;
+    }
     private function findWithCheckPermissions($id)
     {
         $currentUser = Auth::user();
         $record = Record::find($id);
         if ($currentUser->category === 'admin') {
-            return ['success' => true, 'data' => $record];
+            return ['success' => $record !== null ? true : false, 'data' => $record, 'status' => $record !== null ? 'ok' : 'not_found'];
         } else {
             if ($record && $record->entity == $currentUser->entity) {
                 return ['success' => true, 'data' => $record];

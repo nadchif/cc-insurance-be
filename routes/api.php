@@ -39,6 +39,8 @@ Route::group(['prefix' => '/', 'middleware' => ['jsonify']], function () {
 
     Route::middleware('auth:api')->get('record', 'App\Http\Controllers\RecordController@index');
 
+    Route::middleware('auth:api')->get('record/duplicates', 'App\Http\Controllers\RecordController@getDuplicates');
+
     Route::middleware('auth:api')->get('record/{id}', 'App\Http\Controllers\RecordController@get');
 
     Route::middleware('auth:api')->post('record', 'App\Http\Controllers\RecordController@post');

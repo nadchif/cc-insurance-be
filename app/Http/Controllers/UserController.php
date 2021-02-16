@@ -80,10 +80,12 @@ class UserController extends Controller
             ), 201);
         } catch (\Exception $e) {
             DB::rollBack();
+            $code = $e->getCode();
             return response()->json(array(
                 'data' => false,
-                'errors' => $e->getMessage(),
-            ), 500);
+                'error' => $code == 23000 ? 'Cannot use email/username. Try another' : $e->getMessage(),
+                
+            ), $code == 23000 ? 409 : 500);
         }
 
     }
@@ -191,8 +193,8 @@ class UserController extends Controller
         $currentUser = Auth::user();
         $item = User::find($id);
         if ($currentUser->category === 'admin') {
-            return ['success' => true, 'data' => $item];
-        } else {
+            return ['success' => $item !== null ? true : false, 'data' => $item, 'status' => $item !== null ? 'ok' : 'not_found'];
+        }else {
             if ($item && $item->id == $currentUser->id) {
                 return ['success' => true, 'data' => $item];
             } else {
