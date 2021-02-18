@@ -8,13 +8,14 @@ use Illuminate\Support\Facades\DB;
 
 class EntityController extends Controller
 {
-    public function __construct() {
-       $this->required_fields = [
+    public function __construct()
+    {
+        $this->required_fields = [
             'name' => 'required|string|min:2',
             'address' => 'required|string',
             'phone' => 'nullable|regex:/^([0-9\s\-\+\(\)]*)$/|min:5',
             'code' => 'required|string|min:2',
-       ];
+        ];
     }
 
     /**
@@ -30,17 +31,21 @@ class EntityController extends Controller
             'error' => null,
         ), 200);
     }
-    
+
     public function post(Request $request)
-    {
+    {   
+        $restrict_to_admin = $this->restrictToAdmin();
+        if($restrict_to_admin !== false){
+            return $restrict_to_admin;
+        };
         $request->validate($this->required_fields);
 
         try {
             $entity = Entity::create([
                 'name' => $request->name,
                 'code' => $request->code,
-                'address'=>$request->address,
-                'phone' => $request->phone !== null ? $request->phone : ''
+                'address' => $request->address,
+                'phone' => $request->phone !== null ? $request->phone : '',
             ]);
             DB::commit();
             return response()->json(array(
@@ -58,6 +63,10 @@ class EntityController extends Controller
 
     public function put(Request $request, $id)
     {
+        $restrict_to_admin = $this->restrictToAdmin();
+        if($restrict_to_admin !== false){
+            return $restrict_to_admin;
+        };
         $request->validate($this->required_fields);
 
         $currentUser = Auth::user();
@@ -66,7 +75,7 @@ class EntityController extends Controller
             $entity = $result['data'];
             $entity->name = $request->name;
             $entity->code = $request->code;
-            $entity->address =$request->address;
+            $entity->address = $request->address;
             $entity->phone = $request->phone !== null ? $request->phone : '';
             $entity->save();
 
@@ -96,6 +105,10 @@ class EntityController extends Controller
 
     public function delete($id)
     {
+        $restrict_to_admin = $this->restrictToAdmin();
+        if($restrict_to_admin !== false){
+            return $restrict_to_admin;
+        };
         $result = $this->findWithCheckPermissions($id);
         if ($result['success'] === true) {
             $entry = $result['data'];
@@ -107,7 +120,10 @@ class EntityController extends Controller
 
     public function batchDelete(Request $request)
     {
-
+        $restrict_to_admin = $this->restrictToAdmin();
+        if($restrict_to_admin !== false){
+            return $restrict_to_admin;
+        };
         $request->validate(['ids' => 'required|array|min:2|max:25']);
         $deleteList = array();
         foreach ($request->ids as $id) {
@@ -121,6 +137,17 @@ class EntityController extends Controller
             $entry->delete();
         }
         response(null, 204);
+    }
+    private function restrictToAdmin($noPermissionMsg = "Restricted to admins")
+    {
+        $currentUser = Auth::user();
+        if ($currentUser->category !== 'admin') {
+            return response()->json(array(
+                'data' => null,
+                'error' => $noPermissionMsg,
+            ), 403);
+        }
+        return false;
     }
 
     private function findWithCheckPermissions($id)

@@ -91,6 +91,7 @@ class RecordController extends Controller
 
     public function getDuplicates()
     {
+        $this->restrictToAdmin();
         $currentUser = Auth::user();
         $envelopes = array();
         $records = [];
@@ -203,7 +204,6 @@ class RecordController extends Controller
 
     public function batchDelete(Request $request)
     {
-
         $request->validate(['ids' => 'required|array|min:1|max:25']);
         $deleteList = array();
         foreach ($request->ids as $id) {
@@ -289,6 +289,16 @@ class RecordController extends Controller
         }));
         sort($result);
         return $result;
+    }
+    private function restrictToAdmin($noPermissionMsg = "Restricted to admins")
+    {
+        $currentUser = Auth::user();
+        if ($currentUser->category !== 'admin') {
+            return response()->json(array(
+                'data' => null,
+                'error' => $noPermissionMsg,
+            ), 403);
+        }
     }
     private function findWithCheckPermissions($id)
     {

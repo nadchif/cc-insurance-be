@@ -84,7 +84,7 @@ class UserController extends Controller
             return response()->json(array(
                 'data' => false,
                 'error' => $code == 23000 ? 'Cannot use email/username. Try another' : $e->getMessage(),
-                
+
             ), $code == 23000 ? 409 : 500);
         }
 
@@ -156,7 +156,14 @@ class UserController extends Controller
     }
     public function delete($id)
     {
+        $restrict_to_admin = $this->restrictToAdmin();
+        if($restrict_to_admin !== false){
+            return $restrict_to_admin;
+        };
+        $currentUser = Auth::user();
+
         $result = $this->findWithCheckPermissions($id);
+
         if ($result['success'] === true) {
             $entry = $result['data'];
             if (strtolower($entry->category) == 'admin') {
@@ -169,6 +176,7 @@ class UserController extends Controller
             return response(null, 204);
         }
         return $this->handleEntryFindResponse($result);
+
     }
     public function batchDelete(Request $request)
     {
@@ -188,13 +196,25 @@ class UserController extends Controller
         response(null, 204);
     }
 
+    private function restrictToAdmin($noPermissionMsg = "Restricted to admins")
+    {
+        $currentUser = Auth::user();
+        if ($currentUser->category !== 'admin') {
+            return response()->json(array(
+                'data' => null,
+                'error' => $noPermissionMsg,
+            ), 403);
+        }
+        return false;
+    }
+
     private function findWithCheckPermissions($id)
     {
         $currentUser = Auth::user();
         $item = User::find($id);
         if ($currentUser->category === 'admin') {
             return ['success' => $item !== null ? true : false, 'data' => $item, 'status' => $item !== null ? 'ok' : 'not_found'];
-        }else {
+        } else {
             if ($item && $item->id == $currentUser->id) {
                 return ['success' => true, 'data' => $item];
             } else {
